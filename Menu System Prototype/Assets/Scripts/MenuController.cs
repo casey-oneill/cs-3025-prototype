@@ -310,13 +310,16 @@ public class MenuController : MonoBehaviour
 
     void EquipHotkeyItem(int index)
     {
-        if (hotkeyItems[index].type == EquippableItem.ItemType.Weapon)
+        if (hotkeyItems[index] != null)
         {
-            SetEquippedWeapon(hotkeyItems[index]);
-        }
-        else if (hotkeyItems[index].type == EquippableItem.ItemType.Armour)
-        {
-            SetEquippedArmour(hotkeyItems[index]);
+            if (hotkeyItems[index].type == EquippableItem.ItemType.Weapon)
+            {
+                SetEquippedWeapon(hotkeyItems[index]);
+            }
+            else if (hotkeyItems[index].type == EquippableItem.ItemType.Armour)
+            {
+                SetEquippedArmour(hotkeyItems[index]);
+            }
         }
     }
 
