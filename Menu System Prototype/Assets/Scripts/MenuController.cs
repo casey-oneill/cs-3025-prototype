@@ -5,59 +5,149 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
+// Singleton
 public class MenuController : MonoBehaviour
 {
     public enum ItemColours
     {
-        BLUE = 0,
-        GREEN = 1,
-        PURPLE = 2,
-        RED = 3
+        Blue = 0,
+        Green = 1,
+        Purple = 2,
+        Red = 3
     }
 
-    public GameObject OpenMenuButton;
-    public GameObject MainMenu;
-    public Image EquippedWeaponImage;
-    public Image EquippedArmourImage;
+    public enum MenuState
+    {
+        Closed,
+        Main,
+        Weapons,
+        Armours,
+        Settings
+    }
 
-    public Sprite[] WeaponSprites;
-    public Sprite[] ArmourSprites;
+    public GameObject openMenuButton;
+    
+    public GameObject mainMenu;
+    public GameObject weaponsMenu;
+    public GameObject armoursMenu;
+    public GameObject settingsMenu;
 
-    public Image[] HotkeyImages;
+    public Image equippedWeaponImage;
+    public Image equippedArmourImage;
 
-    public EquippableItem[] Weapons = new EquippableItem[4];
-    public EquippableItem[] Armours = new EquippableItem[4];
+    public Sprite[] weaponSprites;
+    public Sprite[] armourSprites;
 
-    private bool isMenuOpen = false;
-    private EquippableItem equippedWeapon;
-    private EquippableItem equippedArmour;
+    public Image[] hotkeyImages;
+
+    public EquippableItem[] weapons = new EquippableItem[4];
+    public EquippableItem[] armours = new EquippableItem[4];
+
+    public RowItem[] rowItems = new RowItem[8];
+
+    private MenuState state = MenuState.Main;
+
+    private static RowItem selectedRowItem = null;
+    private EquippableItem equippedWeapon = null;
+    private EquippableItem equippedArmour = null;
 
     private EquippableItem[] hotkeyItems = new EquippableItem[10];
 
-    public void OpenMenu()
+    public static void SetSelectedRowItem(RowItem rowItem)
     {
-        isMenuOpen = true;
-        OpenMenuButton.SetActive(false);
-        MainMenu.SetActive(true);
+        if (rowItem == null)
+        {
+            MenuController.selectedRowItem = rowItem;
+        }
+        else if (rowItem.item != null)
+        {
+            if (selectedRowItem != null)
+            {
+                if (!rowItem.item.name.Equals(selectedRowItem.item.name))
+                {
+                    selectedRowItem.DeselectRowItem();
+                }
+            }
+
+            MenuController.selectedRowItem = rowItem;
+        }
     }
 
-    public void CloseMenu()
+    public void OpenMainMenu()
     {
-        isMenuOpen = false;
-        OpenMenuButton.SetActive(true);
-        MainMenu.SetActive(false);
+        state = MenuState.Main;
+
+        weaponsMenu.SetActive(false);
+        armoursMenu.SetActive(false);
+        settingsMenu.SetActive(false);
+
+        openMenuButton.SetActive(false);
+        mainMenu.SetActive(true);
+
+        Debug.Log("Menu State " + state.ToString());
+    }
+
+    public void OpenWeaponsMenu()
+    {
+        state = MenuState.Weapons;
+
+        mainMenu.SetActive(false);
+        weaponsMenu.SetActive(true);
+
+        Debug.Log("Menu State " + state.ToString());
+    }
+
+    public void OpenArmoursMenu()
+    {
+        state = MenuState.Armours;
+
+        mainMenu.SetActive(false);
+        armoursMenu.SetActive(true);
+
+        Debug.Log("Menu State " + state.ToString());
+    }
+
+    public void OpenSettingsMenu()
+    {
+        state = MenuState.Settings;
+
+        mainMenu.SetActive(false);
+        settingsMenu.SetActive(true);
+
+        Debug.Log("Menu State " + state.ToString());
+    }
+
+    public void CloseSubmenu()
+    {
+        SetSelectedRowItem(null);
+
+        weaponsMenu.SetActive(false);
+        armoursMenu.SetActive(false);
+        settingsMenu.SetActive(false);
+
+        OpenMainMenu();
+    }
+
+    public void CloseMainMenu()
+    {
+        state = MenuState.Closed;
+        openMenuButton.SetActive(true);
+
+        mainMenu.SetActive(false);
+
+        Debug.Log("Menu State " + state.ToString());
     }
 
     public void SetEquippedWeapon(EquippableItem weapon)
     {
         equippedWeapon = weapon;
-        EquippedWeaponImage.sprite = weapon.Image;
+        equippedWeaponImage.sprite = weapon.sprite;
     }
 
     public void SetEquippedArmour(EquippableItem armour)
     {
         equippedArmour = armour;
-        EquippedArmourImage.sprite = armour.Image;
+        equippedArmourImage.sprite = armour.sprite;
     }
 
     public void SetHotkeyItem(EquippableItem item, int index)
@@ -65,23 +155,136 @@ public class MenuController : MonoBehaviour
         if (item != null)
         {
             hotkeyItems[index] = item;
-            HotkeyImages[index].sprite = item.Image;
+            hotkeyImages[index].sprite = item.sprite;
+
+            // Remove item from other hotkeys
+            for (int i = 0; i < 10; i++)
+            {
+                if (i != index)
+                {
+                    if (hotkeyItems[i] != null && hotkeyItems[i].name.Equals(item.name))
+                    // Recursion!
+                    SetHotkeyItem(null, i);
+                }
+            }
         }
         else
         {
             hotkeyItems[index] = null;
-            HotkeyImages[index].sprite = null;
+            hotkeyImages[index].sprite = null;
         }
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        ConfigureTestData();
+        CloseSubmenu();
+        CloseMainMenu();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            if (state == MenuState.Closed)
+            {
+                OpenMainMenu();
+            }
+            else
+            {
+                if (state == MenuState.Main)
+                {
+                    CloseMainMenu();
+                }
+                else
+                {
+                    CloseSubmenu();
+                }
+            }
+        }
+        else if (Keyboard.current.digit0Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(0);
+        }
+        else if (Keyboard.current.digit1Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(1);
+        }
+        else if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(2);
+        }
+        else if (Keyboard.current.digit3Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(3);
+        }
+        else if (Keyboard.current.digit4Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(4);
+        }
+        else if (Keyboard.current.digit5Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(5);
+        }
+        else if (Keyboard.current.digit6Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(6);
+        }
+        else if (Keyboard.current.digit7Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(7);
+        }
+        else if (Keyboard.current.digit8Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(8);
+        }
+        else if (Keyboard.current.digit9Key.wasPressedThisFrame)
+        {
+            ActivateHotkey(9);
+        }
+    }
+
+    void ActivateHotkey(int index)
+    {
+        if (state == MenuState.Closed)
+        {
+            EquipHotkeyItem(index);
+        }
+        else
+        {
+            HotkeySelectedItem(index);
+        }
+    }
+
+    void EquipHotkeyItem(int index)
+    {
+        if (hotkeyItems[index].type == EquippableItem.ItemType.Weapon)
+        {
+            SetEquippedWeapon(hotkeyItems[index]);
+        }
+        else if (hotkeyItems[index].type == EquippableItem.ItemType.Armour)
+        {
+            SetEquippedArmour(hotkeyItems[index]);
+        }
+    }
+
+    void HotkeySelectedItem(int index)
+    {
+        if (selectedRowItem != null && selectedRowItem.item != null)
+        {
+            SetHotkeyItem(selectedRowItem.item, index);
+        }
+    }
+
+    void ConfigureTestData()
+    {
         // Create item lists
         for (int i = 0; i < 4; i++)
         {
-            Weapons[i] = new EquippableItem(Enum.GetName(typeof(ItemColours), i) + " Sword", WeaponSprites[i], EquippableItem.ItemType.Weapon);
-            Armours[i] = new EquippableItem(Enum.GetName(typeof(ItemColours), i) + " Armour", ArmourSprites[i], EquippableItem.ItemType.Armour);
+            weapons[i] = new EquippableItem(Enum.GetName(typeof(ItemColours), i) + " Sword", weaponSprites[i], EquippableItem.ItemType.Weapon);
+            armours[i] = new EquippableItem(Enum.GetName(typeof(ItemColours), i) + " Armour", armourSprites[i], EquippableItem.ItemType.Armour);
         }
 
         // Remove hotkey mappings
@@ -91,154 +294,19 @@ public class MenuController : MonoBehaviour
         }
 
         // Default equipped items
-        SetEquippedWeapon(Weapons[(int)ItemColours.BLUE]);
-        SetEquippedArmour(Armours[(int)ItemColours.RED]);
+        SetEquippedWeapon(weapons[(int)ItemColours.Blue]);
+        SetEquippedArmour(armours[(int)ItemColours.Red]);
 
-        SetHotkeyItem(Weapons[(int)ItemColours.PURPLE], 1);
-        SetHotkeyItem(Weapons[(int)ItemColours.GREEN], 2);
-        SetHotkeyItem(Armours[(int)ItemColours.BLUE], 3);
-        SetHotkeyItem(Armours[(int)ItemColours.PURPLE], 4);
+        SetHotkeyItem(weapons[(int)ItemColours.Purple], 1);
+        SetHotkeyItem(weapons[(int)ItemColours.Green], 2);
+        SetHotkeyItem(armours[(int)ItemColours.Blue], 3);
+        SetHotkeyItem(armours[(int)ItemColours.Purple], 4);
 
-        isMenuOpen = false;
-        OpenMenuButton.SetActive(true);
-        MainMenu.SetActive(false);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // Escape key closes and opens menu
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        // Default row items
+        for (int i = 0; i < 4; i++)
         {
-            if (isMenuOpen)
-            {
-                CloseMenu();
-            }
-            else
-            {
-                OpenMenu();
-            }
-        }
-
-        // Hotkey bindings
-        if (Keyboard.current.digit0Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[0].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[0]);
-            }
-            else if (hotkeyItems[0].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[0]);
-            }
-        }
-
-        if (Keyboard.current.digit1Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[1].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[1]);
-            }
-            else if (hotkeyItems[1].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[1]);
-            }
-        }
-
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[2].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[2]);
-            }
-            else if (hotkeyItems[2].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[2]);
-            }
-        }
-
-        if (Keyboard.current.digit3Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[3].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[3]);
-            }
-            else if (hotkeyItems[3].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[3]);
-            }
-        }
-
-        if (Keyboard.current.digit4Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[4].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[4]);
-            }
-            else if (hotkeyItems[4].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[4]);
-            }
-        }
-
-        if (Keyboard.current.digit5Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[5].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[5]);
-            }
-            else if (hotkeyItems[5].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[5]);
-            }
-        }
-
-        if (Keyboard.current.digit6Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[6].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[6]);
-            }
-            else if (hotkeyItems[6].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[6]);
-            }
-        }
-
-        if (Keyboard.current.digit7Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[7].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[7]);
-            }
-            else if (hotkeyItems[7].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[7]);
-            }
-        }
-
-        if (Keyboard.current.digit8Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[8].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[8]);
-            }
-            else if (hotkeyItems[8].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[8]);
-            }
-        }
-
-        if (Keyboard.current.digit9Key.wasPressedThisFrame)
-        {
-            if (hotkeyItems[9].Type == EquippableItem.ItemType.Weapon)
-            {
-                SetEquippedWeapon(hotkeyItems[9]);
-            }
-            else if (hotkeyItems[9].Type == EquippableItem.ItemType.Armour)
-            {
-                SetEquippedArmour(hotkeyItems[9]);
-            }
+            rowItems[i].SetItem(weapons[i]);
+            rowItems[i + 4].SetItem(armours[i]);
         }
     }
 }

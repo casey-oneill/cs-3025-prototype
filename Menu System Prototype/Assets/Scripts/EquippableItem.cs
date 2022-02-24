@@ -10,14 +10,14 @@ public class EquippableItem
         Armour
     }
 
-    public string Name;
-    public Sprite Image;
-    public ItemType Type;
+    public string name;
+    public Sprite sprite;
+    public ItemType type;
 
     public EquippableItem(string name, Sprite image, ItemType type)
     {
-        this.Name = name;
-        this.Image = image;
-        this.Type = type;
+        this.name = name;
+        this.sprite = image;
+        this.type = type;
     }
 }
