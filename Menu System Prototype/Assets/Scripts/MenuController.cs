@@ -40,7 +40,7 @@ public class MenuController : MonoBehaviour
     public Sprite[] weaponSprites;
     public Sprite[] armourSprites;
 
-    public Image[] hotkeyImages;
+    public Hotkey[] hotkeys;
 
     public EquippableItem[] weapons = new EquippableItem[4];
     public EquippableItem[] armours = new EquippableItem[4];
@@ -166,7 +166,7 @@ public class MenuController : MonoBehaviour
         if (item != null)
         {
             hotkeyItems[index] = item;
-            hotkeyImages[index].sprite = item.sprite;
+            hotkeys[index].SetItem(item);
 
             // Remove item from other hotkeys
             for (int i = 0; i < 10; i++)
@@ -182,7 +182,7 @@ public class MenuController : MonoBehaviour
         else
         {
             hotkeyItems[index] = null;
-            hotkeyImages[index].sprite = null;
+            hotkeys[index].SetItem(null);
         }
     }
 
@@ -199,6 +199,18 @@ public class MenuController : MonoBehaviour
     public void ExitGame()
     {
         ShowMessage("Unable to exit the game...");
+    }
+
+    public void ActivateHotkey(int index)
+    {
+        if (state == MenuState.Closed)
+        {
+            EquipHotkeyItem(index);
+        }
+        else
+        {
+            HotkeySelectedItem(index);
+        }
     }
 
     void Start()
@@ -294,18 +306,6 @@ public class MenuController : MonoBehaviour
         }
 
         itemDetailsUpdated = itemDetailsFlag;
-    }
-
-    void ActivateHotkey(int index)
-    {
-        if (state == MenuState.Closed)
-        {
-            EquipHotkeyItem(index);
-        }
-        else
-        {
-            HotkeySelectedItem(index);
-        }
     }
 
     void EquipHotkeyItem(int index)
