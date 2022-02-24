@@ -31,6 +31,7 @@ public class MenuController : MonoBehaviour
     public GameObject weaponsMenu;
     public GameObject armoursMenu;
     public GameObject settingsMenu;
+    public GameObject itemDetailsMenu;
 
     public Image equippedWeaponImage;
     public Image equippedArmourImage;
@@ -43,11 +44,16 @@ public class MenuController : MonoBehaviour
     public EquippableItem[] weapons = new EquippableItem[4];
     public EquippableItem[] armours = new EquippableItem[4];
 
+    public ItemDetails itemDetails;
     public RowItem[] rowItems = new RowItem[8];
 
     private MenuState state = MenuState.Main;
 
+    private bool itemDetailsUpdated = true;
+    private static bool itemDetailsFlag = true;
+
     private static RowItem selectedRowItem = null;
+
     private EquippableItem equippedWeapon = null;
     private EquippableItem equippedArmour = null;
 
@@ -58,6 +64,7 @@ public class MenuController : MonoBehaviour
         if (rowItem == null)
         {
             MenuController.selectedRowItem = rowItem;
+            itemDetailsFlag = !itemDetailsFlag;
         }
         else if (rowItem.item != null)
         {
@@ -70,6 +77,7 @@ public class MenuController : MonoBehaviour
             }
 
             MenuController.selectedRowItem = rowItem;
+            itemDetailsFlag = !itemDetailsFlag;
         }
     }
 
@@ -123,6 +131,7 @@ public class MenuController : MonoBehaviour
 
         weaponsMenu.SetActive(false);
         armoursMenu.SetActive(false);
+        itemDetailsMenu.SetActive(false);
         settingsMenu.SetActive(false);
 
         OpenMainMenu();
@@ -244,6 +253,27 @@ public class MenuController : MonoBehaviour
         {
             ActivateHotkey(9);
         }
+
+        // If selected item has changed, update item details menu
+        if (itemDetailsUpdated != itemDetailsFlag)
+        {
+            UpdateItemDetails();
+        }
+    }
+
+    void UpdateItemDetails()
+    {
+        if (selectedRowItem == null || selectedRowItem.item == null)
+        {
+            itemDetailsMenu.SetActive(false);
+        }
+        else
+        {
+            itemDetails.SetItemDetails(selectedRowItem.item);
+            itemDetailsMenu.SetActive(true);
+        }
+
+        itemDetailsUpdated = itemDetailsFlag;
     }
 
     void ActivateHotkey(int index)
