@@ -32,6 +32,7 @@ public class MenuController : MonoBehaviour
     public GameObject armoursMenu;
     public GameObject settingsMenu;
     public GameObject itemDetailsMenu;
+    public GameObject messagesMenu;
 
     public Image equippedWeaponImage;
     public Image equippedArmourImage;
@@ -44,6 +45,7 @@ public class MenuController : MonoBehaviour
     public EquippableItem[] weapons = new EquippableItem[4];
     public EquippableItem[] armours = new EquippableItem[4];
 
+    public MessagesController messages;
     public ItemDetails itemDetails;
     public RowItem[] rowItems = new RowItem[8];
 
@@ -184,20 +186,38 @@ public class MenuController : MonoBehaviour
         }
     }
 
-    // Start is called before the first frame update
+    public void HideMessage()
+    {
+        messagesMenu.SetActive(false);
+    }
+
+    public void SaveGame()
+    {
+        ShowMessage("Saved the game!");
+    }
+
+    public void ExitGame()
+    {
+        ShowMessage("Unable to exit the game...");
+    }
+
     void Start()
     {
         ConfigureTestData();
         CloseSubmenu();
         CloseMainMenu();
+        HideMessage();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            if (state == MenuState.Closed)
+            if (messagesMenu.activeInHierarchy || messagesMenu.activeSelf)
+            {
+                HideMessage();
+            }
+            else if (state == MenuState.Closed)
             {
                 OpenMainMenu();
             }
@@ -306,6 +326,12 @@ public class MenuController : MonoBehaviour
         {
             SetHotkeyItem(selectedRowItem.item, index);
         }
+    }
+
+    void ShowMessage(string message)
+    {
+        messages.UpdateMessage(message);
+        messagesMenu.SetActive(true);
     }
 
     void ConfigureTestData()
