@@ -198,7 +198,7 @@ public class MenuController : MonoBehaviour
 
     public void ExitGame()
     {
-        ShowMessage("Unable to exit the game...");
+        Application.Quit();
     }
 
     public void ActivateHotkey(int index)
