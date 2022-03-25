@@ -83,6 +83,21 @@ public class MenuController : MonoBehaviour
         }
     }
 
+    public void EquipSelectedItem()
+    {
+        if (selectedRowItem != null && selectedRowItem.item != null)
+        {
+            if (selectedRowItem.item.type == EquippableItem.ItemType.Weapon)
+            {
+                SetEquippedWeapon(selectedRowItem.item);
+            }
+            else if (selectedRowItem.item.type == EquippableItem.ItemType.Armour)
+            {
+                SetEquippedArmour(selectedRowItem.item);
+            }
+        }
+    }
+
     public void OpenMainMenu()
     {
         state = MenuState.Main;

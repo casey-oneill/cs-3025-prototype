@@ -7,8 +7,15 @@ public class Hotkey : MonoBehaviour
 {
 
     public Image image;
+    public Text label;
+    public string labelText;
 
     private EquippableItem item;
+
+    public void Start()
+    {
+        label.text = labelText;
+    }
 
     public void SetItem(EquippableItem item)
     {
