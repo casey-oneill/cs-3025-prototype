@@ -749,7 +749,7 @@ ScriptsOnlyBuild:
     className: InputSystemObject
   - hash:
       serializedVersion: 2
-      Hash: ca910f344cf61e78b3f04492ad1faa3e
+      Hash: ad4e72a76823dbfd09e641a238793611
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Hotkey
