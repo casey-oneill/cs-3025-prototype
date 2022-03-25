@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +11,7 @@ public class RowItem : MonoBehaviour
     public Sprite defaultBoxImage;
     public Sprite selectedBoxImage;
 
+    private MenuController menuController;
     private bool isSelected;
 
     public void SetItem(EquippableItem item)
@@ -23,6 +22,12 @@ public class RowItem : MonoBehaviour
 
     private void Start()
     {
+        menuController = MenuController.Instance;
+        if (menuController == null)
+        {
+            Debug.LogError("[RowItem] Failed to find MenuController instance.");
+        }
+
         isSelected = false;
         UpdateBoxImage();
     }
@@ -48,11 +53,11 @@ public class RowItem : MonoBehaviour
 
             if (isSelected)
             {
-                MenuController.SetSelectedRowItem(this);
+                menuController.SetSelectedRowItem(this);
             }
             else
             {
-                MenuController.SetSelectedRowItem(null);
+                menuController.SetSelectedRowItem(null);
             }
         }
     }

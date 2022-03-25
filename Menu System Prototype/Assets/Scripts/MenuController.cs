@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
@@ -23,6 +21,19 @@ public class MenuController : MonoBehaviour
         Weapons,
         Armours,
         Settings
+    }
+
+    public static MenuController Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = GameObject.FindObjectOfType<MenuController>();
+            }
+
+            return instance;
+        }
     }
 
     public GameObject openMenuButton;
@@ -49,23 +60,25 @@ public class MenuController : MonoBehaviour
     public ItemDetails itemDetails;
     public RowItem[] rowItems = new RowItem[8];
 
+    private static MenuController instance;
+
     private MenuState state = MenuState.Main;
 
     private bool itemDetailsUpdated = true;
     private static bool itemDetailsFlag = true;
 
-    private static RowItem selectedRowItem = null;
+    private RowItem selectedRowItem = null;
 
     private EquippableItem equippedWeapon = null;
     private EquippableItem equippedArmour = null;
 
     private EquippableItem[] hotkeyItems = new EquippableItem[10];
 
-    public static void SetSelectedRowItem(RowItem rowItem)
+    public void SetSelectedRowItem(RowItem rowItem)
     {
         if (rowItem == null)
         {
-            MenuController.selectedRowItem = rowItem;
+            selectedRowItem = rowItem;
             itemDetailsFlag = !itemDetailsFlag;
         }
         else if (rowItem.item != null)
@@ -78,7 +91,7 @@ public class MenuController : MonoBehaviour
                 }
             }
 
-            MenuController.selectedRowItem = rowItem;
+            selectedRowItem = rowItem;
             itemDetailsFlag = !itemDetailsFlag;
         }
     }
