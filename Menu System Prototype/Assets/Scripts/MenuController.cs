@@ -64,9 +64,6 @@ public class MenuController : MonoBehaviour
 
     private MenuState state = MenuState.Main;
 
-    private bool itemDetailsUpdated = true;
-    private static bool itemDetailsFlag = true;
-
     private RowItem selectedRowItem = null;
 
     private EquippableItem equippedWeapon = null;
@@ -74,14 +71,20 @@ public class MenuController : MonoBehaviour
 
     private EquippableItem[] hotkeyItems = new EquippableItem[10];
 
+    public void ResetSelectedRowItem()
+    {
+        if (selectedRowItem != null)
+        {
+            selectedRowItem.DeselectRowItem();
+        }
+
+        selectedRowItem = null;
+        UpdateItemDetails();
+    }
+
     public void SetSelectedRowItem(RowItem rowItem)
     {
-        if (rowItem == null)
-        {
-            selectedRowItem = rowItem;
-            itemDetailsFlag = !itemDetailsFlag;
-        }
-        else if (rowItem.item != null)
+        if (rowItem.item != null)
         {
             if (selectedRowItem != null)
             {
@@ -92,7 +95,7 @@ public class MenuController : MonoBehaviour
             }
 
             selectedRowItem = rowItem;
-            itemDetailsFlag = !itemDetailsFlag;
+            UpdateItemDetails();
         }
     }
 
@@ -157,7 +160,7 @@ public class MenuController : MonoBehaviour
 
     public void CloseSubmenu()
     {
-        SetSelectedRowItem(null);
+        ResetSelectedRowItem();
 
         weaponsMenu.SetActive(false);
         armoursMenu.SetActive(false);
@@ -313,12 +316,6 @@ public class MenuController : MonoBehaviour
         {
             ActivateHotkey(9);
         }
-
-        // If selected item has changed, update item details menu
-        if (itemDetailsUpdated != itemDetailsFlag)
-        {
-            UpdateItemDetails();
-        }
     }
 
     void UpdateItemDetails()
@@ -332,8 +329,6 @@ public class MenuController : MonoBehaviour
             itemDetails.SetItemDetails(selectedRowItem.item);
             itemDetailsMenu.SetActive(true);
         }
-
-        itemDetailsUpdated = itemDetailsFlag;
     }
 
     void EquipHotkeyItem(int index)
@@ -385,9 +380,7 @@ public class MenuController : MonoBehaviour
         SetEquippedArmour(armours[(int)ItemColours.Red]);
 
         SetHotkeyItem(weapons[(int)ItemColours.Purple], 1);
-        SetHotkeyItem(weapons[(int)ItemColours.Green], 2);
-        SetHotkeyItem(armours[(int)ItemColours.Blue], 3);
-        SetHotkeyItem(armours[(int)ItemColours.Purple], 4);
+        SetHotkeyItem(armours[(int)ItemColours.Blue], 2);
 
         // Default row items
         for (int i = 0; i < 4; i++)
